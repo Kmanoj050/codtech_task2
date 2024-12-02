@@ -1,0 +1,158 @@
+#Student Grades Management System
+
+import os
+import json
+
+# Function to calculate the letter grade based on the average grade
+def get_letter_grade(average):
+    if average >= 90:
+        return 'A'
+    elif average >= 80:
+        return 'B'
+    elif average >= 70:
+        return 'C'
+    elif average >= 60:
+        return 'D'
+    else:
+        return 'F'
+
+# Function to calculate GPA based on the average grade
+def calculate_gpa(average):
+    if average >= 90:
+        return 4.0
+    elif average >= 80:
+        return 3.0
+    elif average >= 70:
+        return 2.0
+    elif average >= 60:
+        return 1.0
+    else:
+        return 0.0
+
+# Function to calculate the weighted average grade
+def calculate_weighted_average(grades, weights):
+    total_weight = sum(weights)
+    weighted_sum = sum([grades[i] * weights[i] for i in range(len(grades))])
+    return weighted_sum / total_weight if total_weight != 0 else 0
+
+# Function to load student data from a file
+def load_student_data():
+    if not os.path.exists("students.json"):
+        return {}
+    with open("students.json", "r") as file:
+        return json.load(file)
+
+# Function to save student data to a file
+def save_student_data(students_data):
+    with open("students.json", "w") as file:
+        json.dump(students_data, file, indent=4)
+
+# Function to input grades for a student and calculate results
+def input_grades_for_student(student_name):
+    subjects = []
+    grades = []
+    weights = []
+
+    # Ask for the number of subjects
+    num_subjects = int(input(f"How many subjects/assignments for {student_name}? "))
+    
+    # Get subject names, grades, and weights for each subject
+    for i in range(num_subjects):
+        subject_name = input(f"Enter name for subject {i + 1}: ")
+        grade = float(input(f"Enter grade for {subject_name}: "))
+        weight = float(input(f"Enter weight (in %) for {subject_name}: "))
+        
+        subjects.append(subject_name)
+        grades.append(grade)
+        weights.append(weight)
+
+    # Calculate average, letter grade, GPA, and weighted average
+    average = sum(grades) / len(grades)
+    letter_grade = get_letter_grade(average)
+    gpa = calculate_gpa(average)
+    weighted_average = calculate_weighted_average(grades, weights)
+
+    # Print results
+    print("\n--- Results ---")
+    print(f"Student: {student_name}")
+    print(f"Subjects: {subjects}")
+    print(f"Grades: {grades}")
+    print(f"Average Grade: {average:.2f}")
+    print(f"Letter Grade: {letter_grade}")
+    print(f"GPA: {gpa:.2f}")
+    print(f"Weighted Average: {weighted_average:.2f}%")
+    
+    return {
+        "subjects": subjects,
+        "grades": grades,
+        "weights": weights,
+        "average": average,
+        "letter_grade": letter_grade,
+        "gpa": gpa,
+        "weighted_average": weighted_average
+    }
+
+# Main function to manage students and their grades
+def manage_students_grades():
+    students_data = load_student_data()
+    
+    print("Welcome to the Student Grades Management System!\n")
+    
+    while True:
+        print("\nOptions:")
+        print("1. Add/Update Student Grades")
+        print("2. View Student Grades")
+        print("3. View All Students")
+        print("4. Exit")
+        
+        choice = input("\nEnter your choice: ")
+        
+        if choice == '1':  # Add or Update Student Grades
+            student_name = input("Enter the student's name: ").strip()
+            
+            if student_name in students_data:
+                print(f"Updating grades for {student_name}...\n")
+            else:
+                print(f"Adding new student: {student_name}...\n")
+            
+            student_grades = input_grades_for_student(student_name)
+            students_data[student_name] = student_grades
+            save_student_data(students_data)
+            print(f"{student_name}'s grades have been saved successfully.\n")
+        
+        elif choice == '2':  # View Specific Student Grades
+            student_name = input("Enter the student's name to view grades: ").strip()
+            
+            if student_name in students_data:
+                student_grades = students_data[student_name]
+                print(f"\n--- {student_name}'s Grades ---")
+                print(f"Subjects: {student_grades['subjects']}")
+                print(f"Grades: {student_grades['grades']}")
+                print(f"Average Grade: {student_grades['average']:.2f}")
+                print(f"Letter Grade: {student_grades['letter_grade']}")
+                print(f"GPA: {student_grades['gpa']:.2f}")
+                print(f"Weighted Average: {student_grades['weighted_average']:.2f}%\n")
+            else:
+                print(f"Student {student_name} not found.\n")
+        
+        elif choice == '3':  # View All Students
+            if students_data:
+                print("\n--- All Students ---")
+                for student_name, student_grades in students_data.items():
+                    print(f"{student_name}:")
+                    print(f"  Average Grade: {student_grades['average']:.2f}")
+                    print(f"  Letter Grade: {student_grades['letter_grade']}")
+                    print(f"  GPA: {student_grades['gpa']:.2f}")
+                    print(f"  Weighted Average: {student_grades['weighted_average']:.2f}%\n")
+            else:
+                print("No student data available.\n")
+        
+        elif choice == '4':  # Exit the Program
+            print("Exiting the system...")
+            break
+        else:
+            print("Invalid choice! Please select a valid option.\n")
+
+# Running the main function
+if __name__ == "__main__":
+    manage_students_grades()
